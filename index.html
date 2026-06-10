@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JIT-Fernwartungs-Fahrplan · Companion zum Buch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--red:#cc0000;--red-soft:#edd3d2;--ink:#1a1614;--paper:#faf8f5;--line:#d8d2ca;--muted:#6b635c;
+--ok:#3a7d44;--teil:#c9820a;--offen:#cc0000;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'JetBrains Mono',monospace;background:var(--paper);color:var(--ink);line-height:1.5;
+background-image:radial-gradient(var(--line) .5px,transparent .5px);background-size:22px 22px;}
+.wrap{max-width:1180px;margin:0 auto;padding:38px 20px 80px;}
+header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:18px;}
+.kicker{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--red);font-weight:600;}
+h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4.2vw,40px);line-height:1.05;margin:8px 0 10px;}
+.sub{font-size:13px;color:var(--muted);max-width:880px;}
+.sig{color:var(--red);font-weight:600;}
+.ref{font-size:11px;color:var(--muted);font-style:italic;margin-top:6px;}
+h2{font-family:'Fraunces',serif;font-size:20px;margin:26px 0 6px;}
+.note{font-size:12px;color:var(--muted);margin-bottom:10px;max-width:880px;}
+details{margin:12px 0;background:#fff;border:1px solid var(--line);padding:10px 14px;}
+summary{cursor:pointer;font-weight:600;font-size:12px;}
+details p,details li{font-size:11.5px;color:var(--muted);margin-top:6px;}
+details ul{margin-left:18px;}
+.btn{font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+padding:10px 15px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;transition:.15s;}
+.btn.ghost{background:transparent;color:var(--ink);} .btn:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:24px 0 0;align-items:center;}
+.warn{background:#fff7e6;border:1px solid #c9820a;color:#8a5a00;font-size:11.5px;padding:9px 12px;margin:10px 0;}
+footer{margin-top:34px;border-top:1px solid var(--line);padding-top:15px;font-size:11px;color:var(--muted);line-height:1.7;}
+
+/* Bestandsaufnahme */
+.werkbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--ink);padding:10px 14px;margin:12px 0;}
+.werkbar label{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.werkbar input{border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:12px;padding:4px 6px;}
+.werkbar input.w{min-width:240px;}
+.q{background:#fff;border:1px solid var(--line);padding:10px 14px;margin:9px 0;}
+.q .qt{font-size:12px;font-weight:600;margin-bottom:7px;}
+.q .qt b{color:var(--red);}
+.opts{display:flex;flex-wrap:wrap;gap:6px;}
+.opt{font-size:11.5px;padding:5px 10px;border:1px solid var(--line);background:var(--paper);cursor:pointer;border-radius:2px;}
+.opt:hover{border-color:var(--ink);}
+.opt.sel{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+/* Fahrplan */
+.headline{background:var(--ink);color:#fff;padding:12px 16px;margin-top:8px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;}
+.headline .t{font-family:'Fraunces',serif;font-weight:800;font-size:18px;}
+.headline .next{font-size:11px;color:var(--red-soft);}
+.stage{background:#fff;border:1px solid var(--ink);border-top:0;}
+.stage:first-of-type{border-top:1px solid var(--ink);}
+.stagehead{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+.stagehead .sn{font-family:'Fraunces',serif;font-weight:800;font-size:15px;}
+.stagehead .st{font-weight:600;font-size:13px;flex:1;min-width:150px;}
+.pill{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;padding:3px 9px;}
+.stagebody{padding:10px 14px;}
+.gap{font-size:11.5px;margin-bottom:9px;}
+.gap b{color:var(--red);}
+.tmpl{background:var(--paper);border:1px solid var(--line);margin-top:8px;}
+.tmplhead{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:600;padding:7px 11px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.tmplbody{padding:10px 12px;font-size:11.5px;}
+.tmplbody ul{margin-left:17px;}
+.tmplbody li{margin:3px 0;}
+.tmplbody pre{white-space:pre-wrap;font-family:inherit;font-size:11px;line-height:1.55;}
+.copybtn,.csvbtn{font-family:inherit;font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:4px 9px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;}
+.copybtn:hover,.csvbtn:hover{background:var(--ink);color:#fff;}
+.legalbox{border:1px solid var(--teil);background:#fff7e6;padding:9px 12px;margin-top:8px;font-size:11.5px;color:#8a5a00;}
+.legalbox b{color:#8a5a00;}
+.disc{font-size:10.5px;color:var(--muted);font-style:italic;margin-top:7px;}
+.audit{font-size:11px;color:var(--muted);}
+.audit td{border:1px solid var(--line);padding:4px 7px;}
+.audit table{border-collapse:collapse;width:100%;background:#fff;margin-top:5px;}
+.audit th{background:var(--ink);color:#fff;font-size:10px;padding:4px 7px;text-align:left;}
+
+.print-only{display:none;}
+@media print{
+  body{background:none;}
+  .wrap{padding:0;max-width:none;}
+  .noprint{display:none!important;}
+  .print-only{display:block;}
+  .tmpl,.stage,.q{break-inside:avoid;}
+  @page{margin:14mm;}
+}
+.langsw{position:absolute;top:0;right:0;display:flex;border:1px solid var(--ink);}
+.langsw button{font-family:inherit;font-size:11px;font-weight:600;padding:5px 11px;border:0;background:transparent;color:var(--ink);cursor:pointer;letter-spacing:1px;}
+.langsw button.on{background:var(--ink);color:#fff;}
+@media print{.langsw{display:none}}
+body.printobs .wrap>*{display:none!important}
+body.printobs #out{display:block!important}
+body.printobs #out>*{display:none!important}
+body.printobs #out #obsheet{display:block!important}
+@media print{body.printobs .print-only{display:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="noprint" style="position:relative">
+  <div class="langsw noprint"><button id="lde" class="on" onclick="setLang('de')">DE</button><button id="len" onclick="setLang('en')">EN</button></div>
+  <div class="kicker" data-t="kicker"></div>
+  <h1 data-t="h1"></h1>
+  <p class="sub" data-t="sub"></p>
+  <p class="ref" data-t="ref"></p>
+</header>
+
+<details class="noprint">
+<summary data-t="dsum"></summary>
+<div data-t="dbody"></div>
+</details>
+
+<h2 class="noprint" data-t="h2a"></h2>
+<div class="werkbar noprint">
+  <span><label data-t="lWerk"></label> <input class="w" id="werk" oninput="state.werk=this.value;renderOut()"></span>
+  <span><label data-t="lDatum"></label> <input type="date" id="datum" onchange="state.datum=this.value;renderOut()"></span>
+  <span><label data-t="lMod"></label> <input class="w" id="mod" oninput="state.mod=this.value;renderOut()"></span>
+  <span><label data-t="lCj"></label> <input class="w" id="cj" oninput="state.cj=this.value;renderOut()"></span>
+</div>
+<div id="questions" class="noprint"></div>
+
+<h2 class="noprint" data-t="h2b"></h2>
+<p class="note noprint" data-t="noteb"></p>
+
+<div class="print-only" id="printHead"></div>
+<div id="out"></div>
+
+<div class="toolbar noprint">
+  <button class="btn ghost" onclick="saveJSON()" data-t="bsave"></button>
+  <button class="btn ghost" onclick="document.getElementById('file').click()" data-t="bload"></button>
+  <input type="file" id="file" accept=".json" style="display:none" onchange="loadJSON(event)">
+  <button class="btn ghost" id="cinv" onclick="copyInvite()" data-t="binv"></button>
+  <button class="btn ghost" onclick="printObs()" data-t="bobs"></button>
+  <button class="btn" onclick="window.print()" data-t="bprint"></button>
+</div>
+
+<footer class="noprint" data-t="foot"></footer>
+</div>
+
+<script>
+/* ---- Kanonische DE-Werte (Speicher-Schlüssel), Anzeige übersetzt ---- */
+const QUESTIONS=[
+ {key:"sektor",opts:["Energie","Wasser/Abwasser","Chemie/Pharma","Fertigung/Maschinenbau","Lebensmittel","Sonstige Industrie"]},
+ {key:"ziel",opts:["SCADA-Master","SPS-Produktionslinie","Sicherheitsgerichtetes System (SIS)","Historian","Engineering-Workstation","Fernwartungs-Gateway"]},
+ {key:"vektor",opts:["Ransomware aus der Office-IT","Kompromittierter Fernwartungszugang (OEM)","Phishing auf Engineering-Workstation","Schatten-OT-Gerät entdeckt","USB-Fund an HMI","Kompromittierter Cloud-Tenant (OT-Telemetrie)"]},
+ {key:"dauer",opts:["90 Minuten","120 Minuten","180 Minuten"]},
+ {key:"melde",opts:["BSI-Meldepflicht einspielen","Ohne Meldepflicht-Komplikation"]},
+ {key:"medien",opts:["Medienanfrage einspielen","Ohne Medien-Komplikation"]}
+];
+const PARTS=["Geschäftsführung / Krisenstab","SOC / IT-Security","OT-Leitung / Leitwarte","Werksleitung","Unternehmenskommunikation","Datenschutz / Recht","Process Safety Engineer"];
+
+const OPT_EN={
+"Energie":"Energy","Wasser/Abwasser":"Water/wastewater","Chemie/Pharma":"Chemicals/pharma","Fertigung/Maschinenbau":"Manufacturing/machinery","Lebensmittel":"Food & beverage","Sonstige Industrie":"Other industry",
+"SCADA-Master":"SCADA master","SPS-Produktionslinie":"PLC production line","Sicherheitsgerichtetes System (SIS)":"Safety instrumented system (SIS)","Historian":"Historian","Engineering-Workstation":"Engineering workstation","Fernwartungs-Gateway":"Remote maintenance gateway",
+"Ransomware aus der Office-IT":"Ransomware from office IT","Kompromittierter Fernwartungszugang (OEM)":"Compromised remote maintenance access (OEM)","Phishing auf Engineering-Workstation":"Phishing on engineering workstation","Schatten-OT-Gerät entdeckt":"Shadow OT device discovered","USB-Fund an HMI":"USB device found at HMI","Kompromittierter Cloud-Tenant (OT-Telemetrie)":"Compromised cloud tenant (OT telemetry)",
+"90 Minuten":"90 minutes","120 Minuten":"120 minutes","180 Minuten":"180 minutes",
+"BSI-Meldepflicht einspielen":"Inject BSI reporting obligation","Ohne Meldepflicht-Komplikation":"Without reporting complication",
+"Medienanfrage einspielen":"Inject media inquiry","Ohne Medien-Komplikation":"Without media complication",
+"Geschäftsführung / Krisenstab":"Executive management / crisis team","SOC / IT-Security":"SOC / IT security","OT-Leitung / Leitwarte":"OT management / control room","Werksleitung":"Plant management","Unternehmenskommunikation":"Corporate communications","Datenschutz / Recht":"Data protection / legal","Process Safety Engineer":"Process safety engineer"
+};
+const opt=v=>lang==="en"?(OPT_EN[v]||v):v;
+
+/* Sektor-Prozessbegriff für Einspielungstexte */
+const SECT={
+"Energie":{de:"die Erzeugungs- und Schaltanlagen",en:"the generation and switchgear systems"},
+"Wasser/Abwasser":{de:"Pumpwerke und Aufbereitung",en:"the pumping stations and treatment process"},
+"Chemie/Pharma":{de:"die laufende Charge im kontinuierlichen Prozess",en:"the running batch in the continuous process"},
+"Fertigung/Maschinenbau":{de:"die Fertigungslinien",en:"the production lines"},
+"Lebensmittel":{de:"die laufende Produktionscharge",en:"the running production batch"},
+"Sonstige Industrie":{de:"die Produktion",en:"production"}};
+
+const TXT={
+de:{
+ title:"OT-Tabletop-Übungsgenerator · Companion zum Buch",
+ kicker:"OT-Security · Companion zum Buch",
+ h1:"OT-Tabletop-Übungsgenerator",
+ sub:"Tabletop-Übungen sind der wichtigste Test eines Vorfallmanagement-Prozesses: günstig, ohne Anlagen-Beeinflussung, und sie decken zuverlässig Lücken auf, die in der Theorie unsichtbar bleiben. Dieses Werkzeug erzeugt aus wenigen Angaben ein vollständiges <b>Moderations-Drehbuch</b> — Ablaufplan, Einspielungen, Beobachterbogen, Debrief-Leitfaden und spoilerfreie Einladung. <span class='sig'>§</span> Alles bleibt im Browser.",
+ ref:"Methodik nach „ISMS für die Industrie\u201c, Kap. 8.4 (Tabletop-Übungen), 8.1.1 (OT-Vorfall-Triage), 9 (No-Touch-Register), 8.3.1 (Frühwarnung §32 BSIG) und 17.4 (Tabletop als Audit-Stufe 4).",
+ dsum:"Aufbau, Spielregeln & Audit-Verwertung (lesen)",
+ dbody:"<p><b>Aufbau (Kap. 8.4.1):</b> Vorbereitung (zwei bis vier Wochen vorher: Ziel, Szenario, Rollen, Raum) → Briefing (15 Min: Spielregeln, Übungsziel, Rolle der Spielleitung) → Szenario-Start (5 Min: erstes Lagebild) → Spielphasen (Eskalationsstufen mit neuen Informationen und Entscheidungsbedarf; Lage-Update alle 20–30 Min) → Abschluss-Lagebild → Debriefing.</p><p><b>Spielregeln:</b> Keine echte Systemberührung — alles wird gesprochen und dokumentiert, nichts wird geklickt. Jede simulierte Kommunikation trägt die Kennzeichnung „ÜBUNG\u201c. Die Übung ist kein Bewertungsinstrument für Einzelpersonen (Just-Culture-Prinzip, Kap. 7.3); bewertet werden Prozesse, nicht Menschen. Die Spielleitung darf Einspielungen vorziehen, wenn eine Diskussion stockt.</p><p><b>Teilnehmende sind die echten Rollen:</b> Es übt, wer im Ernstfall entscheidet — nicht deren Vertretung der Vertretung. Für Führungskräfte und Werksleiter empfiehlt das Buch das 90-Minuten-Format mit realistischem Szenario, jährlich (Kap. 7.2).</p><p><b>Audit-Verwertung (Kap. 17.4):</b> Der Tabletop-Test ist Stufe 4 des fünfstufigen OT-Audit-Modells — die wahrscheinlich aufschlussreichste. Dokumentierte Durchführung, Beobachterbogen und Maßnahmenliste sind verwertbare Nachweise für ISO/IEC 27001 (Controls 5.24–5.27) und die Bewältigung von Sicherheitsvorfällen nach §30 Abs. 2 BSIG.</p>",
+ h2a:"Schritt 1 — Übung konfigurieren",
+ lWerk:"Werk / Standort",phWerk:"z. B. Werk Hannover",lDatum:"Übungstermin",lMod:"Spielleitung",phMod:"Name",lCj:"Zielsystem (Name)",phCj:"z. B. SCADA-Master Linie A",
+ lParts:"Teilnehmerkreis (bestimmt Lernziele und Beobachterfragen)",
+ sisHint:"Hinweis: Beim Zielsystem SIS gehört der Process Safety Engineer in die Übung — die Entscheidung über das Fahren in den sicheren Zustand liegt beim Safety-Verantwortlichen, die Entscheidung über Netz-Isolation beim ISB (Kap. 6.4/6.5). Beide müssen aufeinander abgestimmt sein.",
+ h2b:"Schritt 2 — Ihr Drehbuch",
+ noteb:"Das Drehbuch ist nur für Spielleitung und Beobachter bestimmt — Teilnehmende erhalten ausschließlich die Einladung (unten, spoilerfrei). Druckansicht erzeugt das vollständige Moderations-PDF; der Beobachterbogen lässt sich separat drucken.",
+ bsave:"Speichern (JSON)",bload:"Laden (JSON)",binv:"Einladung kopieren",binvDone:"Kopiert ✓",bobs:"Beobachterbogen drucken",bprint:"Drehbuch drucken / PDF",
+ foot:"Methodik nach „ISMS für die Industrie\u201c, Kap. 8.4. Eine Tabletop-Übung simuliert den Vorfall durch Spielleitung und Eskalationsstufen — Teilnehmende sind die echten Rollen des Krisenstabs und reagieren in Echtzeit. Die generierten Inhalte sind Formulierungshilfen für die Übungsvorbereitung, keine Rechtsberatung; der Wert der Übung liegt im Debriefing und den abgeleiteten Maßnahmen, nicht im Dokument.<br><span class='sig'>§</span> Sabine Frömling — Independent OT-Security &amp; Compliance Advisory.",
+ q:{sektor:"Branche / Sektor (färbt die Einspielungen ein)",ziel:"Zielsystem-Typ (bestimmt das Containment-Dilemma)",vektor:"Eintrittsvektor (bestimmt die Szenario-Dramaturgie)",dauer:"Übungsdauer (Buch-Empfehlung: 90–180 Minuten)",melde:"Meldepflicht-Komplikation (§32 BSIG)",medien:"Medien-Komplikation"},
+ planTitle:w=>`Drehbuch ${w}`,printTitle:"OT-Tabletop-Übung — Moderations-Drehbuch",werkPh:"[Werkname]",cjPh:"[Zielsystem]",modPh:"[Spielleitung]",
+ confidential:"Nur für Spielleitung und Beobachter — nicht an Teilnehmende verteilen.",
+ metaRow:(d,dur,m)=>`Termin: ${d} · Dauer: ${dur} · Spielleitung: ${m}`,
+ goalsH:"Lernziele",
+ goals:{base:["Erste Lagebildung und OT-Vorfall-Triage unter Zeitdruck durchführen (Kap. 8.1.1).","Containment-Entscheidung am Crown Jewel entlang von No-Touch-Logik, Eskalationskette und sicherem Rückfall treffen (Kap. 9)."],
+  melde:"Frühwarnung an das BSI innerhalb der 24-Stunden-Frist mit unvollständiger Lage formulieren (§32 BSIG, Kap. 8.3.1).",
+  medien:"Externe Kommunikation kontrollieren: Sprachregelung, Zuständigkeit, Freigabeweg (Kap. 8.3).",
+  gf:"Rollenklarheit im Krisenstab herstellen: Wer entscheidet Anlagenstillstand, wer informiert Aufsichtsgremien (§38 BSIG)?",
+  safety:"Safety-Security-Schnittstelle ausüben: sicherer Zustand (Safety-Verantwortlicher) vs. Netz-Isolation (ISB) abstimmen (Kap. 6.4).",
+  recover:"Wiederanlauf-Reihenfolge und Backup-Integrität bewerten (Kap. 24)."},
+ rulesH:"Spielregeln (im Briefing vorlesen)",
+ rules:["Keine echte Systemberührung — alles wird gesprochen und dokumentiert, nichts wird geklickt.","Jede simulierte Kommunikation (E-Mail, Anruf, Meldung) trägt die Kennzeichnung „ÜBUNG\u201c.","Bewertet werden Prozesse, nicht Personen — die Übung ist kein Bewertungsinstrument für Einzelne (Just Culture, Kap. 7.3).","Die Spielleitung gibt Einspielungen; Teilnehmende entscheiden und handeln in ihren echten Rollen.","Stockt eine Diskussion, zieht die Spielleitung die nächste Einspielung vor.","Alle 20–30 Minuten kurzes Lage-Update: Was wurde entschieden? Wer kommuniziert wohin? Was läuft?"],
+ schedH:"Ablaufplan",schedTh:["Zeit","Block","Inhalt"],
+ blkBrief:"Briefing",blkBriefC:"Spielregeln, Übungsziel, Rolle der Spielleitung, Vertraulichkeit",
+ blkStart:"Szenario-Start",blkStartC:"Erstes Lagebild — Einspielung 1",
+ blkPlay:"Spielphase",blkUpd:"Lage-Update",blkUpdC:"Standortbestimmung: Entscheidungen, Kommunikationswege, laufende Maßnahmen",
+ blkFinal:"Abschluss-Lagebild",blkFinalC:"Stand am Ende: Was ist gelöst, was offen?",
+ blkDebrief:"Debriefing",blkDebriefC:"Auswertung entlang des Leitfadens, Maßnahmenliste",
+ injH:"Einspielungen (Moderationskarten)",
+ injRead:"Einspielung (vorlesen)",injExp:"Erwartete Entscheidungen / Aktionen",injObs:"Beobachterfragen",injAnchor:"Anker",
+ triageNote:"Triage-Hinweis für die Spielleitung: Die drei Kriterien (OT-Asset-Bezug · operativer/Safety-Impact · security-relevante Ursache) sind kumulativ, aber das dritte gilt im Zweifel als erfüllt — solange eine Security-Ursache nicht ausgeschlossen ist, läuft das Ereignis im OT-Vorfallprozess (Beweislast-Umkehr, Kap. 8.1.1).",
+ obsH:"Beobachterbogen",
+ obsIntro:"Je Einspielung beobachten, nicht eingreifen. Bewertung: erfüllt / teilweise / offen. Der ausgefüllte Bogen ist Audit-Nachweis (Stufe 4, Kap. 17.4) und Grundlage der Maßnahmenliste.",
+ obsTh:["Nr.","Einspielung","Schlüsselfrage","erfüllt","teilw.","offen","Notizen"],
+ obsKey:["Wurden Rollen und Zuständigkeiten ohne Diskussion gefunden?","Wurde dokumentiert, wer wann was entschieden hat?","Wurde die Kennzeichnung „ÜBUNG\u201c durchgehalten?"],
+ debH:"Debrief-Leitfaden (30–60 Minuten)",
+ deb:["Was hat gut funktioniert — und warum?","Wo gab es Reibungen zwischen Rollen oder Standorten?","Welche Prozess-Lücken wurden sichtbar (Eskalationsmatrix, Sprachregelung, Entscheidungsbefugnis Anlagenstillstand)?","Welche Informationen fehlten zu welchem Zeitpunkt — und wer hätte sie liefern müssen?","Welche Maßnahmen leiten wir ab — mit Verantwortlichem und Termin?"],
+ llH:"Lessons-Learned-Raster (NIST CSF v2, wie Kap. 28.4)",
+ llTh:["Funktion","Befund aus der Übung","Maßnahme · Verantwortlich · Termin"],
+ llRows:[["Govern","z. B. Reporting an GF, Rollenklarheit, §38-Pflichten",""],["Identify","z. B. Asset-/Crown-Jewels-Lücken, unklare Abhängigkeiten",""],["Protect","z. B. Segmentierung, Fernwartungsweg, Backup-Architektur",""],["Detect","z. B. Detektionszeitpunkt, Meldeweg aus der Halle",""],["Respond","z. B. Triage, No-Touch-Disziplin, Meldefristen",""],["Recover","z. B. Wiederanlauf-Reihenfolge, Backup-Integrität",""]],
+ auditH:"Audit-Verwertung",
+ auditBody:"Dokumentierte Durchführung + Beobachterbogen + Maßnahmenliste = Nachweis für: ISO/IEC 27001 Controls 5.24 (Planung Vorfallmanagement), 5.25 (Beurteilung), 5.26 (Reaktion), 5.27 (Lernen aus Vorfällen) · Bewältigung von Sicherheitsvorfällen nach §30 Abs. 2 BSIG · Stufe 4 des OT-Audit-Modells (Kap. 17.4). Aufbewahrung mit Datum, Teilnehmerliste und abgeleiteten Maßnahmen.",
+ invH:"Einladung an die Teilnehmenden (spoilerfrei)",
+ invNote:"Per Knopfleiste unten kopieren. Enthält bewusst kein Szenario — der Überraschungsmoment ist Teil des Übungswerts.",
+ inv:(werk,datum,dauer,parts,mod)=>`Betreff: Einladung Tabletop-Übung OT-Sicherheitsvorfall — ${werk}, ${datum}
+
+Liebe Kolleginnen und Kollegen,
+
+am ${datum} führen wir eine ${dauer} dauernde Tabletop-Übung zu einem OT-Sicherheitsvorfall durch (Werk: ${werk}). Eine Tabletop-Übung simuliert einen Vorfall am Tisch: Sie reagieren in Ihrer echten Rolle auf Lagebilder, die die Spielleitung einspielt — es wird nichts an realen Systemen verändert.
+
+Teilnehmerkreis: ${parts}.
+Spielleitung: ${mod}.
+
+Vorbereitung ist nicht erforderlich und nicht erwünscht; das Szenario wird bewusst nicht vorab geteilt. Die Übung dient der Verbesserung unserer Prozesse, nicht der Bewertung von Personen.
+
+Bitte halten Sie den Termin frei von Parallelterminen — die Übung lebt von durchgehender Anwesenheit.
+
+Vielen Dank!`,
+ sched60note:"",
+ vecLabel:"Szenario",
+ emptyParts:"— Teilnehmerkreis wählen —",
+ notRead:"Datei nicht lesbar.",
+ minutes:"Min",
+ tplus:m=>`T+${m} Min`
+},
+en:{
+ title:"OT Tabletop Exercise Generator · Book companion",
+ kicker:"OT Security · Book companion",
+ h1:"OT Tabletop Exercise Generator",
+ sub:"Tabletop exercises are the most important test of an incident management process: inexpensive, with zero impact on the plant, and they reliably expose gaps that stay invisible in theory. From a few inputs, this tool generates a complete <b>facilitator script</b> — schedule, injects, observer sheet, debrief guide and a spoiler-free invitation. <span class='sig'>§</span> Everything stays in your browser.",
+ ref:"Methodology per \u201cISMS für die Industrie\u201d, ch. 8.4 (tabletop exercises), 8.1.1 (OT incident triage), 9 (no-touch register), 8.3.1 (early warning, §32 BSIG — German NIS2 transposition) and 17.4 (tabletop as audit stage 4).",
+ dsum:"Structure, ground rules & audit use (read me)",
+ dbody:"<p><b>Structure (ch. 8.4.1):</b> preparation (two to four weeks ahead: objective, scenario, roles, room) → briefing (15 min: ground rules, exercise objective, role of the facilitator) → scenario start (5 min: first situation picture) → play phases (escalation stages with new information and decisions to make; situation update every 20–30 min) → final situation picture → debriefing.</p><p><b>Ground rules:</b> no touching of real systems — everything is spoken and documented, nothing is clicked. Every simulated communication is labelled \u201cEXERCISE\u201d. The exercise is not an assessment instrument for individuals (just-culture principle, ch. 7.3); processes are assessed, not people. The facilitator may bring an inject forward when a discussion stalls.</p><p><b>Participants are the real roles:</b> whoever decides in a real incident exercises — not their deputy's deputy. For executives and plant managers, the book recommends the 90-minute format with a realistic scenario, annually (ch. 7.2).</p><p><b>Audit use (ch. 17.4):</b> the tabletop test is stage 4 of the five-stage OT audit model — probably the most revealing one. Documented execution, observer sheet and action list are usable evidence for ISO/IEC 27001 (controls 5.24–5.27) and incident handling under §30(2) BSIG.</p>",
+ h2a:"Step 1 — Configure the exercise",
+ lWerk:"Plant / site",phWerk:"e.g. Hanover plant",lDatum:"Exercise date",lMod:"Facilitator",phMod:"Name",lCj:"Target system (name)",phCj:"e.g. SCADA master line A",
+ lParts:"Participants (drives learning objectives and observer questions)",
+ sisHint:"Note: with an SIS as target, the process safety engineer belongs in the exercise — the decision to drive the plant to a safe state sits with the safety owner, the decision to isolate a network segment with the ISO (ch. 6.4/6.5). Both must be coordinated.",
+ h2b:"Step 2 — Your script",
+ noteb:"The script is for the facilitator and observers only — participants receive nothing but the invitation (below, spoiler-free). The print view produces the full facilitation PDF; the observer sheet can be printed separately.",
+ bsave:"Save (JSON)",bload:"Load (JSON)",binv:"Copy invitation",binvDone:"Copied ✓",bobs:"Print observer sheet",bprint:"Print script / PDF",
+ foot:"Methodology per \u201cISMS für die Industrie\u201d, ch. 8.4. A tabletop exercise simulates the incident through a facilitator and escalation stages — participants are the real crisis-team roles and react in real time. The generated content is a drafting aid for exercise preparation, not legal advice; the value of the exercise lies in the debriefing and the resulting actions, not in the document.<br><span class='sig'>§</span> Sabine Frömling — Independent OT Security &amp; Compliance Advisory.",
+ q:{sektor:"Industry / sector (flavours the injects)",ziel:"Target system type (drives the containment dilemma)",vektor:"Entry vector (drives the scenario dramaturgy)",dauer:"Exercise duration (book recommendation: 90–180 minutes)",melde:"Reporting-obligation complication (§32 BSIG)",medien:"Media complication"},
+ planTitle:w=>`Script ${w}`,printTitle:"OT Tabletop Exercise — Facilitator Script",werkPh:"[plant name]",cjPh:"[target system]",modPh:"[facilitator]",
+ confidential:"For facilitator and observers only — do not distribute to participants.",
+ metaRow:(d,dur,m)=>`Date: ${d} · Duration: ${dur} · Facilitator: ${m}`,
+ goalsH:"Learning objectives",
+ goals:{base:["Build a first situation picture and run the OT incident triage under time pressure (ch. 8.1.1).","Take the containment decision at the crown jewel along no-touch logic, escalation chain and safe fallback (ch. 9)."],
+  melde:"Draft the early warning to the BSI within the 24-hour deadline with an incomplete picture (§32 BSIG, ch. 8.3.1 — German NIS2 regime).",
+  medien:"Control external communication: agreed language, responsibility, approval path (ch. 8.3).",
+  gf:"Establish role clarity in the crisis team: who decides on a plant shutdown, who informs supervisory bodies (§38 BSIG)?",
+  safety:"Exercise the safety–security interface: safe state (safety owner) vs. network isolation (ISO) in coordination (ch. 6.4).",
+  recover:"Assess restart sequence and backup integrity (ch. 24)."},
+ rulesH:"Ground rules (read aloud in the briefing)",
+ rules:["No touching of real systems — everything is spoken and documented, nothing is clicked.","Every simulated communication (email, call, report) is labelled \u201cEXERCISE\u201d.","Processes are assessed, not people — the exercise is not an assessment instrument for individuals (just culture, ch. 7.3).","The facilitator delivers injects; participants decide and act in their real roles.","If a discussion stalls, the facilitator brings the next inject forward.","Every 20–30 minutes a short situation update: what was decided? Who communicates where? What is running?"],
+ schedH:"Schedule",schedTh:["Time","Block","Content"],
+ blkBrief:"Briefing",blkBriefC:"Ground rules, exercise objective, role of the facilitator, confidentiality",
+ blkStart:"Scenario start",blkStartC:"First situation picture — inject 1",
+ blkPlay:"Play phase",blkUpd:"Situation update",blkUpdC:"Checkpoint: decisions, communication paths, running actions",
+ blkFinal:"Final situation picture",blkFinalC:"Status at the end: what is resolved, what is open?",
+ blkDebrief:"Debriefing",blkDebriefC:"Evaluation along the guide, action list",
+ injH:"Injects (facilitation cards)",
+ injRead:"Inject (read aloud)",injExp:"Expected decisions / actions",injObs:"Observer questions",injAnchor:"Anchor",
+ triageNote:"Triage note for the facilitator: the three criteria (OT asset link · operational/safety impact · security-relevant cause) are cumulative, but the third counts as met when in doubt — as long as a security cause cannot be ruled out, the event runs in the OT incident process (reversed burden of proof, ch. 8.1.1).",
+ obsH:"Observer sheet",
+ obsIntro:"Observe per inject, do not intervene. Rating: met / partial / open. The completed sheet is audit evidence (stage 4, ch. 17.4) and the basis of the action list.",
+ obsTh:["No.","Inject","Key question","met","part.","open","Notes"],
+ obsKey:["Were roles and responsibilities found without debate?","Was it documented who decided what, and when?","Was the \u201cEXERCISE\u201d labelling maintained throughout?"],
+ debH:"Debrief guide (30–60 minutes)",
+ deb:["What worked well — and why?","Where was there friction between roles or sites?","Which process gaps became visible (escalation matrix, agreed language, decision authority over plant shutdown)?","Which information was missing at which point — and who should have provided it?","Which actions do we derive — with owner and deadline?"],
+ llH:"Lessons-learned grid (NIST CSF v2, as in ch. 28.4)",
+ llTh:["Function","Finding from the exercise","Action · Owner · Deadline"],
+ llRows:[["Govern","e.g. reporting to management, role clarity, §38 duties",""],["Identify","e.g. asset/crown-jewels gaps, unclear dependencies",""],["Protect","e.g. segmentation, remote maintenance path, backup architecture",""],["Detect","e.g. time to detection, reporting path from the shop floor",""],["Respond","e.g. triage, no-touch discipline, reporting deadlines",""],["Recover","e.g. restart sequence, backup integrity",""]],
+ auditH:"Audit use",
+ auditBody:"Documented execution + observer sheet + action list = evidence for: ISO/IEC 27001 controls 5.24 (incident management planning), 5.25 (assessment), 5.26 (response), 5.27 (learning from incidents) · incident handling under §30(2) BSIG (German NIS2 transposition) · stage 4 of the OT audit model (ch. 17.4). Retain with date, participant list and derived actions.",
+ invH:"Invitation to participants (spoiler-free)",
+ invNote:"Copy via the button bar below. Deliberately contains no scenario — the element of surprise is part of the exercise value.",
+ inv:(werk,datum,dauer,parts,mod)=>`Subject: Invitation — tabletop exercise, OT security incident — ${werk}, ${datum}
+
+Dear colleagues,
+
+On ${datum} we will run a ${dauer} tabletop exercise on an OT security incident (plant: ${werk}). A tabletop exercise simulates an incident at the table: you respond in your real role to situation pictures delivered by the facilitator — nothing is changed on real systems.
+
+Participants: ${parts}.
+Facilitator: ${mod}.
+
+No preparation is required or desired; the scenario is deliberately not shared in advance. The exercise serves to improve our processes, not to assess individuals.
+
+Please keep the slot free of parallel meetings — the exercise depends on uninterrupted attendance.
+
+Thank you!`,
+ sched60note:"",
+ vecLabel:"Scenario",
+ emptyParts:"— select participants —",
+ notRead:"File not readable.",
+ minutes:"min",
+ tplus:m=>`T+${m} min`
+}};
+let lang="de";
+const L=()=>TXT[lang];
+
+/* ================= Inject-Bibliothek =================
+   A/B je Vektor, C je Zielsystem-Klasse, D/E/F als Module.
+   {CJ}=Zielsystem-Name, {WERK}, {PROZ}=Sektor-Prozessbegriff      */
+const INJ={
+A:{
+"Ransomware aus der Office-IT":{
+ de:{t:"Montag, 6:45 Uhr — Frühschicht",r:"Die Frühschicht startet in {WERK}. In der Leitwarte fallen mehrere HMIs nacheinander aus; auf einem Bildschirm erscheint eine Fehlermeldung mit unbekanntem Logo und englischem Text. {PROZ} sollen in 30 Minuten anlaufen. Der Schichtleiter ruft an: „Was sollen wir tun?\u201c",e:["Erstes Lagebild strukturieren: Was wissen wir, was vermuten wir?","OT-Vorfall-Triage anstoßen (drei Kriterien, Kap. 8.1.1)","Krisenstab alarmieren — wer ruft wen, nach welcher Liste?","Entscheidung zum Produktionsanlauf vertagen oder treffen — wer ist befugt?"],o:["Wird zwischen Wissen und Vermutung getrennt?","Existiert eine Alarmierungsliste — und ist sie aktuell?","Wer übernimmt erkennbar die Führung?"]},
+ en:{t:"Monday, 6:45 — early shift",r:"The early shift starts at {WERK}. In the control room, several HMIs fail one after another; one screen shows an error message with an unknown logo and English text. {PROZ} are due to start in 30 minutes. The shift supervisor calls: \u201cWhat do we do?\u201d",e:["Structure the first situation picture: what do we know, what do we assume?","Start the OT incident triage (three criteria, ch. 8.1.1)","Alert the crisis team — who calls whom, from which list?","Postpone or take the production start decision — who has authority?"],o:["Is knowledge separated from assumption?","Does an alerting list exist — and is it current?","Who visibly takes the lead?"]}},
+"Kompromittierter Fernwartungszugang (OEM)":{
+ de:{t:"Dienstag, 14:10 Uhr — Anruf des SOC",r:"Das SOC meldet eine aktive Fernwartungssitzung auf {CJ} in {WERK} — außerhalb jedes angekündigten Wartungsfensters. Der zuständige OEM bestreitet auf Nachfrage, aktuell verbunden zu sein. Die Sitzung läuft weiter.",e:["Lagebild: legitime Sitzung, gestohlene Zugangsdaten oder Fehlalarm?","Fernwartungsregister heranziehen — wer ist Owner des Zugangs?","Sitzung beobachten vs. trennen: erste Containment-Diskussion anstoßen","OEM-Eskalationskontakt aktivieren (nicht die Hotline)"],o:["Ist das Fernwartungsregister auffindbar und aktuell?","Wird die Sitzung dokumentiert (Beweissicherung) statt panisch getrennt?","Kennt jemand den vertraglichen Sicherheitskontakt des OEM?"]},
+ en:{t:"Tuesday, 14:10 — call from the SOC",r:"The SOC reports an active remote maintenance session on {CJ} at {WERK} — outside any announced maintenance window. When asked, the responsible OEM denies being connected. The session continues.",e:["Situation picture: legitimate session, stolen credentials or false alarm?","Pull up the remote maintenance register — who owns this access?","Observe vs. disconnect: start the first containment discussion","Activate the OEM escalation contact (not the hotline)"],o:["Is the remote maintenance register findable and current?","Is the session documented (evidence) instead of cut in panic?","Does anyone know the OEM's contractual security contact?"]}},
+"Phishing auf Engineering-Workstation":{
+ de:{t:"Mittwoch, 9:20 Uhr — Meldung aus der Halle",r:"Ein Instandhalter in {WERK} meldet: Auf der Engineering-Workstation neben {CJ} hat sich nach dem Öffnen eines vermeintlichen Hersteller-Newsletters kurz ein schwarzes Fenster geöffnet. Seitdem „fühlt sich die Maschine träge an\u201c. Die EWS hat Projektdateien für {PROZ} und Internetzugang.",e:["Meldung ernst nehmen und loben (Meldekultur, Kap. 7.3)","Triage: EWS = ISA-95-Ebene betroffen → OT-Vorfallprozess","EWS-Nutzung stoppen, aber Gerät nicht ausschalten (Forensik, flüchtige Daten)","Prüfen: Welche Verbindungen hat die EWS zu Steuerungen?"],o:["Wird der Melder behandelt wie ein Frühwarnsystem — oder wie ein Schuldiger?","Weiß jemand, ob die EWS ein dokumentiertes Asset mit Owner ist?","Kommt der Reflex „ausschalten\u201c — und widerspricht jemand?"]},
+ en:{t:"Wednesday, 9:20 — report from the shop floor",r:"A maintenance technician at {WERK} reports: on the engineering workstation next to {CJ}, a black window briefly opened after opening a supposed vendor newsletter. Since then \u201cthe machine feels sluggish\u201d. The EWS holds project files for {PROZ} and has internet access.",e:["Take the report seriously and praise it (reporting culture, ch. 7.3)","Triage: EWS = ISA-95 level affected → OT incident process","Stop using the EWS but do not power it off (forensics, volatile data)","Check: which connections does the EWS have to controllers?"],o:["Is the reporter treated as an early-warning system — or as a culprit?","Does anyone know whether the EWS is a documented asset with an owner?","Does the \u201cswitch it off\u201d reflex appear — and does anyone push back?"]}},
+"Schatten-OT-Gerät entdeckt":{
+ de:{t:"Donnerstag, 11:05 Uhr — Fund bei der Begehung",r:"Bei einer Begehung in {WERK} wird im Schaltschrank nahe {CJ} ein unbekanntes Gerät mit Mobilfunk-Antenne gefunden. Niemand der Anwesenden kennt es; ein Aufkleber nennt eine Service-Firma, die keiner zuordnen kann. Es blinkt.",e:["Nicht anfassen, nicht abziehen — fotografieren, dokumentieren, Bereich kennzeichnen","Triage: unautorisierte Komponente im OT-Netz = Security-Ursache nicht ausschließbar","Klären: Wartungsvertrag? Historisch gewachsen? Wer hätte es wissen müssen?","Netzseitig prüfen (passiv!): kommuniziert das Gerät, wohin?"],o:["Greift jemand reflexhaft zum Stecker?","Wird zwischen „unbekannt\u201c und „bösartig\u201c sauber unterschieden?","Existiert ein Prozess für Schatten-OT-Funde (Kap. 18.4)?"]},
+ en:{t:"Thursday, 11:05 — finding during a walk-through",r:"During a walk-through at {WERK}, an unknown device with a cellular antenna is found in the cabinet near {CJ}. Nobody present recognises it; a sticker names a service company nobody can place. It is blinking.",e:["Do not touch, do not unplug — photograph, document, mark the area","Triage: unauthorised component in the OT network = security cause cannot be ruled out","Clarify: maintenance contract? Historically grown? Who should have known?","Check on the network side (passively!): is the device communicating, and where to?"],o:["Does anyone reflexively reach for the plug?","Is \u201cunknown\u201d cleanly distinguished from \u201cmalicious\u201d?","Does a process for shadow-OT findings exist (ch. 18.4)?"]}},
+"USB-Fund an HMI":{
+ de:{t:"Freitag, 5:50 Uhr — Schichtübergabe",r:"Bei der Schichtübergabe in {WERK} steckt ein unbekannter USB-Stick im HMI nahe {CJ}. Die Nachtschicht will ihn nicht bemerkt haben. Auf dem HMI laufen seit ca. 2 Uhr sporadisch Fehlermeldungen für {PROZ}.",e:["Stick stecken lassen, nicht „mal eben prüfen\u201c — Beweissicherung","Korrelation Fehlermeldungen ↔ Stick als Hypothese, nicht als Gewissheit behandeln","Triage durchlaufen; Meldung an SOC mit Zeitstempeln","Klären: USB-Policy, Gerätesperren, wer hatte nachts Zutritt?"],o:["Will jemand den Stick an einem anderen Rechner öffnen?","Werden Zeitstempel und Zutritte systematisch gesichert?","Ist die USB-Regel bekannt — oder Theorie?"]},
+ en:{t:"Friday, 5:50 — shift handover",r:"At shift handover in {WERK}, an unknown USB stick is found plugged into the HMI near {CJ}. The night shift claims not to have noticed it. Since about 2:00, the HMI has shown sporadic error messages for {PROZ}.",e:["Leave the stick in place, do not \u201cjust check it\u201d — evidence preservation","Treat the correlation errors ↔ stick as a hypothesis, not a certainty","Run the triage; report to the SOC with timestamps","Clarify: USB policy, port locks, who had access during the night?"],o:["Does anyone want to open the stick on another machine?","Are timestamps and access records systematically preserved?","Is the USB rule known — or theory?"]}},
+"Kompromittierter Cloud-Tenant (OT-Telemetrie)":{
+ de:{t:"Montag, 16:30 Uhr — Mail des Cloud-Providers",r:"Der Cloud-Provider meldet verdächtige Aktivität einer privilegierten Identität im Tenant von {WERK} — dem Tenant, in den {CJ} Telemetrie liefert. Unklar ist, ob nur gelesen wurde. Niemand weiß auswendig, welche Daten dort liegen und ob {PROZ} ohne die Cloud-Anbindung definiert weiterlaufen (Kap. 8.7.1).",e:["Klassifikation der Telemetrie klären: Was genau liegt im Tenant?","Privilegierte Cloud-Identitäten sperren/rotieren — wer kann das, wie schnell?","Abhängigkeitsfrage stellen: Läuft die OT ohne Cloud-Funktion weiter?","Verantwortlichkeits-Schnittstelle Provider ↔ eigenes Haus klären (Shared Responsibility)"],o:["Kann jemand sagen, welche OT-Daten im Tenant liegen?","Ist die versteckte Verfügbarkeitsabhängigkeit bekannt — oder eine Überraschung?","Wer „besitzt\u201c den Cloud-Vorfall: IT, OT oder beide?"]},
+ en:{t:"Monday, 16:30 — email from the cloud provider",r:"The cloud provider reports suspicious activity by a privileged identity in {WERK}'s tenant — the tenant {CJ} delivers telemetry to. It is unclear whether data was only read. Nobody knows offhand which data sits there and whether {PROZ} keep running in a defined mode without the cloud link (ch. 8.7.1).",e:["Clarify the telemetry classification: what exactly sits in the tenant?","Lock/rotate privileged cloud identities — who can, how fast?","Ask the dependency question: does OT keep running without the cloud function?","Clarify the responsibility interface provider ↔ own organisation (shared responsibility)"],o:["Can anyone state which OT data sits in the tenant?","Is the hidden availability dependency known — or a surprise?","Who \u201cowns\u201d the cloud incident: IT, OT or both?"]}}
+},
+B:{
+"Ransomware aus der Office-IT":{
+ de:{t:"Eskalation — Ausbreitung sichtbar",r:"Die IT meldet: Auch im Office-Netz sind mehrere Server nicht mehr erreichbar; eine erste Sichtung deutet auf Verschlüsselung hin. Ein Bediener erinnert sich, dass am Wochenende ein OEM-Techniker Updates eingespielt hat. Gleichzeitig trifft bei der Geschäftsführung eine E-Mail mit Lösegeldforderung ein.",e:["Triage formal abschließen: OT-Vorfall — ja (Beweislast-Umkehr)","Hypothesen trennen: OEM-Update (Spur? Zufall?) vs. Office-Ausbreitung","Verbindungen Office↔OT identifizieren: Was muss JETZT kontrolliert getrennt werden — und was nicht ({CJ}!)","Lösegeld-Mail: nicht antworten, sichern, Zuständigkeit (Recht/GF) klären"],o:["Wird die OEM-Spur sauber als Hypothese geführt — oder vorverurteilt?","Kennt jemand die tatsächlichen Office-OT-Übergänge?","Beginnt eine dokumentierte Zeitleiste?"]},
+ en:{t:"Escalation — spread becomes visible",r:"IT reports: several office servers are no longer reachable; a first look suggests encryption. An operator remembers that an OEM technician installed updates over the weekend. At the same time, executive management receives an email with a ransom demand.",e:["Formally conclude the triage: OT incident — yes (reversed burden of proof)","Separate hypotheses: OEM update (lead? coincidence?) vs. office spread","Identify office↔OT connections: what must be disconnected in a controlled way NOW — and what must not ({CJ}!)","Ransom email: do not reply, preserve, clarify ownership (legal/management)"],o:["Is the OEM lead handled cleanly as a hypothesis — or prejudged?","Does anyone know the actual office–OT transitions?","Does a documented timeline begin?"]}},
+"Kompromittierter Fernwartungszugang (OEM)":{
+ de:{t:"Eskalation — die Sitzung handelt",r:"Das SOC beobachtet in der laufenden Sitzung Befehle Richtung {CJ}: Konfigurations-Lesezugriffe, dann ein Schreibversuch. Der echte OEM-Sicherheitskontakt bestätigt inzwischen: Die verwendeten Zugangsdaten wurden dem Techniker vor zwei Wochen per Phishing gestohlen.",e:["Lage neu bewerten: bestätigter Angreifer mit privilegiertem Zugang","Containment-Optionen sammeln, ohne sie schon auszuführen (→ nächste Karte)","Weitere Zugänge desselben OEM prüfen — auch in anderen Werken","Beweissicherung der Sitzungsaufzeichnung anordnen"],o:["Bleibt die Reihenfolge Beobachten → Bewerten → Entscheiden erhalten?","Denkt jemand an die anderen Werke / Zugänge?","Wird die Recording-Aufbewahrung sofort gesichert?"]},
+ en:{t:"Escalation — the session acts",r:"The SOC observes commands towards {CJ} in the running session: configuration reads, then a write attempt. Meanwhile, the real OEM security contact confirms: the credentials in use were phished from the technician two weeks ago.",e:["Reassess: confirmed attacker with privileged access","Collect containment options without executing them yet (→ next card)","Check further access paths of the same OEM — including other plants","Order preservation of the session recording"],o:["Does the sequence observe → assess → decide hold?","Does anyone think of the other plants / access paths?","Is recording retention secured immediately?"]}},
+"Phishing auf Engineering-Workstation":{
+ de:{t:"Eskalation — Bewegung im Netz",r:"Das SOC findet von der EWS ausgehende Anmeldeversuche an zwei Steuerungen und am Domänencontroller des OT-Segments. Einer der Versuche an {CJ} war erfolgreich — mit einem Service-Konto, dessen Passwort seit Jahren unverändert ist.",e:["Lage: Lateral Movement bestätigt, privilegiertes Konto kompromittiert","Service-Konto-Frage: Sperren? Was bricht dann an {CJ}? (→ Containment-Karte)","DC-Kompromittierung als Worst-Case-Hypothese mitführen","Forensik-Dienstleister-Frage stellen: Wer, vertraglich, wie schnell?"],o:["Wird gefragt, was am Konto hängt, bevor jemand „sperren\u201c ruft?","Existiert ein IR-Retainer / benannter Forensik-Partner?","Wird die DC-Hypothese ernst genommen?"]},
+ en:{t:"Escalation — movement in the network",r:"The SOC finds login attempts originating from the EWS towards two controllers and the OT segment's domain controller. One attempt at {CJ} succeeded — using a service account whose password has not changed in years.",e:["Picture: lateral movement confirmed, privileged account compromised","Service-account question: lock it? What breaks at {CJ} then? (→ containment card)","Carry DC compromise as the worst-case hypothesis","Ask the forensics question: who, contractually, how fast?"],o:["Does anyone ask what depends on the account before someone shouts \u201clock it\u201d?","Does an IR retainer / named forensics partner exist?","Is the DC hypothesis taken seriously?"]}},
+"Schatten-OT-Gerät entdeckt":{
+ de:{t:"Eskalation — das Gerät spricht",r:"Die passive Netzanalyse zeigt: Das Gerät kommuniziert seit Monaten regelmäßig mit einer ausländischen IP — und hat Lese-Zugriff auf den Feldbus von {CJ}. Eine alte Bestellung taucht auf: Vor drei Jahren ließ ein inzwischen ausgeschiedener Instandhalter ein „Ferndiagnose-Modul\u201c einbauen. Einen Vertrag findet niemand.",e:["Neubewertung: monatelanger unautorisierter Datenabfluss möglich","Entscheidung vorbereiten: Gerät isolieren — aber wie, ohne {PROZ} zu stören? (→ Containment-Karte)","Dokumentations-Lücke benennen: Change-Prozess, Inventar, Lieferanten","Rechts-/Datenschutzfrage: Was floss ab, an wen, seit wann?"],o:["Wird der Altfall sachlich behandelt (Just Culture) statt Schuldsuche?","Erkennt jemand den Change-Management-Befund?","Wird Datenschutz/Recht aktiv hinzugezogen?"]},
+ en:{t:"Escalation — the device talks",r:"Passive network analysis shows: the device has been communicating regularly with a foreign IP for months — and has read access to {CJ}'s fieldbus. An old purchase order surfaces: three years ago, a since-departed maintenance technician had a \u201cremote diagnostics module\u201d installed. Nobody can find a contract.",e:["Reassess: months of unauthorised data outflow possible","Prepare the decision: isolate the device — but how, without disturbing {PROZ}? (→ containment card)","Name the documentation gap: change process, inventory, suppliers","Legal/privacy question: what flowed out, to whom, since when?"],o:["Is the legacy case handled factually (just culture) instead of blame-seeking?","Does anyone recognise the change-management finding?","Are legal/privacy actively brought in?"]}},
+"USB-Fund an HMI":{
+ de:{t:"Eskalation — die Spur verdichtet sich",r:"Die Auswertung der Zutrittsprotokolle zeigt: Nachts war ein externer Reinigungsdienst im Leitwartenbereich. Das SOC findet auf dem HMI einen neuen Autostart-Eintrag, angelegt 2:07 Uhr. Die Fehlermeldungen an {CJ} häufen sich; die Frühschicht fragt, ob {PROZ} normal weiterlaufen sollen.",e:["Lage: physischer Zugriff + Persistenz = gezielter Vorgang wahrscheinlich","Weiterbetrieb-Entscheidung strukturieren (→ Containment-Karte)","Dienstleister-Schiene: Vertrag, Begleitpflicht, Personalliste anfordern","Weitere HMIs/USB-Ports im Werk prüfen lassen (passiv, dokumentiert)"],o:["Wird der Weiterbetrieb bewusst entschieden — oder läuft er einfach?","Greift die Workplace-Security-Frage zu externen Dienstleistern (Kap. 25.7)?","Bleibt die Forensik-Disziplin trotz Zeitdruck erhalten?"]},
+ en:{t:"Escalation — the trail thickens",r:"The access logs show: an external cleaning service was in the control-room area during the night. The SOC finds a new autostart entry on the HMI, created at 2:07. Error messages at {CJ} are increasing; the early shift asks whether {PROZ} should keep running normally.",e:["Picture: physical access + persistence = targeted action likely","Structure the keep-running decision (→ containment card)","Service-provider track: contract, escort duty, request the staff list","Have further HMIs/USB ports in the plant checked (passively, documented)"],o:["Is continued operation consciously decided — or does it just continue?","Does the workplace-security question for external providers come up (ch. 25.7)?","Does forensic discipline survive the time pressure?"]}},
+"Kompromittierter Cloud-Tenant (OT-Telemetrie)":{
+ de:{t:"Eskalation — Schreibzugriff bestätigt",r:"Der Provider liefert Logs: Die kompromittierte Identität hat nicht nur gelesen, sondern Konfigurationen im Telemetrie-Dienst geändert — darunter Schwellwerte, die Alarme für {CJ} auslösen würden. Seit 40 Minuten kommen keine Telemetriedaten mehr an; ob die OT-Seite das verkraftet, weiß niemand sicher.",e:["Doppelte Lage: Integrität der Alarmkette UND Verfügbarkeitsabhängigkeit","Lokale Alarmierung an {CJ} prüfen: Funktioniert sie ohne Cloud?","Cloud-Seite einfrieren (Identitäten, Schlüssel) vs. OT-Seite stabilisieren — Reihenfolge festlegen","Provider-Eskalation formalisieren: Incident-Referenz, Zeitleiste, Zuständigkeiten"],o:["Wird die manipulierte Alarmkette als eigenes Risiko erkannt?","Weiß jemand, ob lokale Alarme unabhängig funktionieren?","Wird die versteckte Abhängigkeit jetzt als Befund notiert (Kap. 8.7.1)?"]},
+ en:{t:"Escalation — write access confirmed",r:"The provider delivers logs: the compromised identity did not only read but changed configurations in the telemetry service — including thresholds that would trigger alarms for {CJ}. No telemetry has arrived for 40 minutes; whether the OT side tolerates this, nobody knows for sure.",e:["Twofold picture: integrity of the alarm chain AND availability dependency","Check local alarming at {CJ}: does it work without the cloud?","Freeze the cloud side (identities, keys) vs. stabilise the OT side — set the order","Formalise provider escalation: incident reference, timeline, responsibilities"],o:["Is the manipulated alarm chain recognised as a risk of its own?","Does anyone know whether local alarms work independently?","Is the hidden dependency now recorded as a finding (ch. 8.7.1)?"]}}
+},
+/* C: Containment-Dilemma nach Zielsystem-Klasse */
+C:{
+"SCADA-Master":{
+ de:{t:"Containment-Dilemma — Sichtbarkeit",r:"Der SOC schlägt vor, {CJ} sofort vom Netz zu isolieren, „bevor mehr passiert\u201c. Die Leitwarte widerspricht: Ohne {CJ} fliegen die Operatoren blind — keine Visualisierung, keine Alarme für {PROZ}. Die Uhr läuft.",e:["No-Touch-Prüfung: Ist {CJ} veto-pflichtig gelistet? Wer ist die benannte Rolle?","Eskalationskette mit Fristen abrufen — und einhalten","Alternativen prüfen: redundanter Master, Schreibsperre + Logsicherung statt Isolation","Entscheidung dokumentieren: wer, wann, auf welcher Grundlage"],o:["Wird das No-Touch-Register tatsächlich herangezogen — oder aus dem Bauch entschieden?","Hält die Eskalationskette ihre Zeitfenster (Kap. 9.5)?","Wird ein sicherer Rückfall statt unilateraler Isolation gewählt?"]},
+ en:{t:"Containment dilemma — visibility",r:"The SOC proposes isolating {CJ} from the network immediately, \u201cbefore more happens\u201d. The control room objects: without {CJ}, operators fly blind — no visualisation, no alarms for {PROZ}. The clock is running.",e:["No-touch check: is {CJ} listed as veto-bound? Who is the named role?","Pull up the escalation chain with deadlines — and keep them","Check alternatives: redundant master, write lock + log preservation instead of isolation","Document the decision: who, when, on what basis"],o:["Is the no-touch register actually consulted — or is this decided by gut feeling?","Does the escalation chain keep its time windows (ch. 9.5)?","Is a safe fallback chosen instead of unilateral isolation?"]}},
+"SPS-Produktionslinie":{
+ de:{t:"Containment-Dilemma — laufender Prozess",r:"Vorschlag aus der IT: {CJ} „kurz durchstarten\u201c, das beseitige die Symptome vielleicht. Die Produktion widerspricht: Ein ungeplanter Neustart mitten in {PROZ} kann die Charge zerstören und Anfahrzeiten von Stunden kosten. Beide schauen auf den Krisenstab.",e:["Containment-Paradox benennen: Die Maßnahme kann das Schadensereignis sein (Kap. 9.1)","Veto-Logik anwenden: Service-Restart an {CJ} = veto-pflichtig? Benannte Rolle rufen","Option „letzten gültigen Zustand halten + beobachten\u201c gegen „Neustart\u201c abwägen","Frist setzen: Wann wird neu entschieden, mit welchen neuen Informationen?"],o:["Wird das Containment-Paradox erkannt und ausgesprochen?","Hat die Produktionsseite ein wirksames Veto — oder nur eine Meinung?","Wird eine Wiedervorlage mit Frist vereinbart statt Endlosdiskussion?"]},
+ en:{t:"Containment dilemma — running process",r:"Proposal from IT: \u201cquickly restart\u201d {CJ}, that might clear the symptoms. Production objects: an unplanned restart in the middle of {PROZ} can destroy the batch and cost hours of restart time. Both look at the crisis team.",e:["Name the containment paradox: the action can be the damage event (ch. 9.1)","Apply the veto logic: service restart at {CJ} = veto-bound? Call the named role","Weigh \u201chold last valid state + observe\u201d against \u201crestart\u201d","Set a deadline: when is this re-decided, with which new information?"],o:["Is the containment paradox recognised and said out loud?","Does the production side hold an effective veto — or just an opinion?","Is a timed follow-up agreed instead of endless discussion?"]}},
+"Sicherheitsgerichtetes System (SIS)":{
+ de:{t:"Containment-Dilemma — letzte Schutzschicht",r:"Der Verdacht erreicht {CJ} — die letzte Schutzschicht der Anlage. Die IT will „zur Sicherheit\u201c die Netzwerkverbindung des SIS trennen und die Service-Konten sperren. Der Process Safety Engineer hebt die Hand.",e:["Safety-Triage: Ist eine Safety-Funktion betroffen oder gefährdet? → Process Safety Engineer entscheidet mit (Kap. 6.4)","Zwei getrennte Entscheidungen sauber trennen: sicherer Zustand (Safety) vs. Netz-Isolation (ISB) — abgestimmt, nicht vermischt","Keine Konfigurations- oder Kontenänderung am SIS ohne Safety-Freigabe","Falls Zweifel bleiben: Anlage kontrolliert in den sicheren Zustand fahren — durch den Safety-Verantwortlichen"],o:["Wird der Process Safety Engineer als Entscheider behandelt — oder als Bedenkenträger?","Bleiben die beiden Entscheidungslinien getrennt und abgestimmt?","Versucht jemand, am SIS „schnell etwas zu härten\u201c?"]},
+ en:{t:"Containment dilemma — last layer of protection",r:"The suspicion reaches {CJ} — the plant's last layer of protection. IT wants to disconnect the SIS network link \u201cto be safe\u201d and lock its service accounts. The process safety engineer raises a hand.",e:["Safety triage: is a safety function affected or at risk? → the process safety engineer co-decides (ch. 6.4)","Keep two separate decisions cleanly apart: safe state (safety) vs. network isolation (ISO) — coordinated, not mixed","No configuration or account change on the SIS without safety approval","If doubt remains: drive the plant to the safe state in a controlled way — by the safety owner"],o:["Is the process safety engineer treated as a decision-maker — or as an objector?","Do the two decision lines stay separate and coordinated?","Does anyone try to \u201cquickly harden something\u201d on the SIS?"]}},
+"Historian":{
+ de:{t:"Containment-Dilemma — Datenstrom & Nachweis",r:"Die Spur führt zu {CJ}. Die IT will den Historian sofort isolieren. Einwand aus der Compliance-Ecke: Über {CJ} laufen Aufzeichnungen, die regulatorisch nachweispflichtig sind — und die Forensik braucht genau diese Daten unverändert.",e:["Doppelrolle erkennen: Beweismittel UND meldepflichtiger Datenstrom","Schreibsperre + forensische Sicherung vor jeder Isolationsentscheidung","Prüfen: Lokale Pufferung an den Quell-SPS möglich (kein Eingriff stromaufwärts)?","Meldepflicht-Auswirkung notieren: Lückendokumentation, falls der Strom reißt"],o:["Wird die Beweissicherung VOR der Containment-Aktion angeordnet?","Kennt jemand die regulatorische Rolle des Historian?","Wird die Pufferungs-Option geprüft statt sofortiger Trennung?"]},
+ en:{t:"Containment dilemma — data stream & evidence",r:"The trail leads to {CJ}. IT wants to isolate the historian immediately. Objection from the compliance corner: {CJ} carries records subject to regulatory evidence obligations — and forensics needs exactly this data unchanged.",e:["Recognise the double role: evidence AND reportable data stream","Write lock + forensic preservation before any isolation decision","Check: local buffering at the source PLCs possible (no upstream intervention)?","Note the reporting impact: gap documentation if the stream breaks"],o:["Is evidence preservation ordered BEFORE the containment action?","Does anyone know the historian's regulatory role?","Is the buffering option examined instead of immediate disconnection?"]}},
+"Engineering-Workstation":{
+ de:{t:"Containment-Dilemma — Werkzeug der Angreifer und der Verteidiger",r:"{CJ} ist mutmaßlich kompromittiert — und zugleich das einzige Gerät, mit dem die Steuerungen von {PROZ} im Notfall umprojektiert werden könnten. Die IT will es sofort einziehen und neu aufsetzen.",e:["Konflikt benennen: Forensik-Objekt vs. einziges Engineering-Werkzeug","Image vor jeder Bereinigung; Projektdateien-Integrität separat prüfen (Soll-Ist gegen Backup)","Ersatz-EWS-Frage: Gibt es eine saubere zweite? Wo sind lizenzierte Tools?","Zugriff der EWS auf Steuerungen kontrolliert unterbinden, ohne das Gerät zu zerstören"],o:["Wird das Image VOR dem Neuaufsetzen gezogen?","Fällt die Frage nach der Projektdaten-Integrität (Logik-Manipulation)?","Existiert ein Ersatzgerät-Konzept — oder Single Point of Engineering?"]},
+ en:{t:"Containment dilemma — tool of attackers and defenders",r:"{CJ} is presumably compromised — and at the same time the only device that could re-engineer the controllers of {PROZ} in an emergency. IT wants to confiscate and rebuild it immediately.",e:["Name the conflict: forensic object vs. only engineering tool","Image before any cleanup; check project-file integrity separately (target vs. backup)","Spare-EWS question: is there a clean second one? Where are licensed tools?","Block the EWS's access to controllers in a controlled way without destroying the device"],o:["Is the image taken BEFORE the rebuild?","Does the project-data integrity question (logic manipulation) come up?","Does a spare-device concept exist — or a single point of engineering?"]}},
+"Fernwartungs-Gateway":{
+ de:{t:"Containment-Dilemma — die eine Tür",r:"Der Verdacht betrifft {CJ} selbst — das zentrale Gateway, über das ALLE Fernzugriffe laufen. Es abzuschalten schließt den Angreifer aus — und sperrt zugleich jeden legitimen Support aus, mitten im Vorfall, in dem OEM-Hilfe gebraucht würde.",e:["Single-Channel-Kehrseite benennen: Die eine Tür ist auch der eine Engpass","Abgestufte Optionen statt Aus-Schalter: Sessions beenden, Konten rotieren, nur eingehend sperren, Notfall-Zugang mit Vier-Augen-Aktivierung","Notfall-Zugangsprozess abrufen: dokumentiert? geübt?","Kommunikation an OEMs: kontrollierte Information statt Funkstille"],o:["Werden abgestufte Optionen entwickelt — oder nur an/aus diskutiert?","Existiert der dokumentierte Notfall-Zugang (Kap. 22.2) wirklich?","Denkt jemand an die OEM-Kommunikation?"]},
+ en:{t:"Containment dilemma — the one door",r:"The suspicion concerns {CJ} itself — the central gateway ALL remote access runs through. Switching it off locks the attacker out — and at the same time locks out every legitimate support, in the middle of an incident where OEM help would be needed.",e:["Name the single-channel flip side: the one door is also the one bottleneck","Graduated options instead of an off switch: end sessions, rotate accounts, block inbound only, emergency access with four-eyes activation","Pull up the emergency access process: documented? rehearsed?","Communication to OEMs: controlled information instead of radio silence"],o:["Are graduated options developed — or is it just on/off?","Does the documented emergency access (ch. 22.2) really exist?","Does anyone think of OEM communication?"]}}
+},
+D:{de:{t:"Meldepflicht — die 24-Stunden-Uhr",r:"Die Rechtsabteilung fragt in die Runde: „Ist das ein erheblicher Sicherheitsvorfall nach §32 Abs. 2 BSIG — und wann haben wir Kenntnis erlangt?\u201c Bis zur 24-Stunden-Frist für die Frühwarnung bleiben nach jetzigem Stand vier Stunden. Vieles ist noch unklar.",e:["Erheblichkeit prüfen: schwere Betriebsstörung / finanzielle Verluste / Schäden Dritter möglich?","Kenntniszeitpunkt festlegen und dokumentieren — die Uhr läuft ab Kenntnis","Frühwarnung mit unvollständiger Lage formulieren (Vorlage Kap. 8.3.1): sachlich, ohne Spekulation","Zuständigkeit klären: Wer meldet im BSI-Portal, wer gibt frei?"],o:["Wird „melden mit Unsicherheit\u201c ausgehalten — oder auf Vollständigkeit gewartet?","Ist der Portal-Zugang (Registrierung, Zugangsdaten) verfügbar?","Wird der Kenntniszeitpunkt sauber begründet?"]},
+ en:{t:"Reporting obligation — the 24-hour clock",r:"Legal asks the room: \u201cIs this a significant incident under §32(2) BSIG — and when did we obtain knowledge?\u201d Four hours remain until the 24-hour early-warning deadline as things stand. Much is still unclear.",e:["Check significance: severe operational disruption / financial loss / harm to third parties possible?","Fix and document the time of knowledge — the clock runs from knowledge","Draft the early warning with an incomplete picture (template ch. 8.3.1): factual, no speculation","Clarify ownership: who files in the BSI portal, who approves?"],o:["Is \u201creporting under uncertainty\u201d tolerated — or does the room wait for completeness?","Is portal access (registration, credentials) available?","Is the time of knowledge cleanly justified?"]}},
+E:{de:{t:"Medienanfrage — die Außenwelt klopft an",r:"Eine Regionalzeitung ruft beim Werksleiter an: Man habe „aus dem Umfeld\u201c von einem Cyberangriff in {WERK} gehört — ob er das bestätigen könne, Redaktionsschluss sei in 90 Minuten. Parallel fragt ein Großkunde nach seinen Lieferterminen.",e:["Sprachregelung abrufen oder jetzt festlegen: eine Stimme, ein Freigabeweg","Werksleiter aus der Schusslinie: Verweis an Unternehmenskommunikation","Kundenkommunikation getrennt von Pressearbeit führen — ehrlich zu Lieferfähigkeit","Intern informieren, bevor extern etwas erscheint (Belegschaft, Betriebsrat)"],o:["Antwortet der Werksleiter spontan — oder greift der Freigabeweg?","Existiert eine vorbereitete Holding-Statement-Logik?","Wird die Belegschaft mitgedacht?"]},
+ en:{t:"Media inquiry — the outside world knocks",r:"A regional newspaper calls the plant manager: they heard \u201cfrom sources\u201d about a cyberattack at {WERK} — can he confirm, the editorial deadline is in 90 minutes. In parallel, a major customer asks about delivery dates.",e:["Pull up or now set the agreed language: one voice, one approval path","Take the plant manager out of the line of fire: refer to corporate communications","Run customer communication separately from press work — honest about delivery capability","Inform internally before anything appears externally (workforce, works council)"],o:["Does the plant manager answer spontaneously — or does the approval path kick in?","Does a prepared holding-statement logic exist?","Is the workforce considered?"]}},
+F:{de:{t:"Wiederanlauf — die zweite Hälfte des Vorfalls",r:"Die Lage ist stabilisiert. Jetzt fragt die Geschäftsführung: „Wann läuft {PROZ} wieder — und woher wissen wir, dass die Backups sauber sind?\u201c Zur Einordnung der Spielleitung: Im Sensorica-Fall (Kap. 28) dauerte der vollständige Wiederanlauf fast eine Woche, der letzte brauchbare Backup-Stand war 48 Stunden alt.",e:["Wiederanlauf-Reihenfolge festlegen: Was zuerst, was hängt woran (Crown-Jewels-Logik)","Backup-Integrität prüfen, bevor restauriert wird — Zeitpunkt der Kompromittierung vs. Backup-Stand","RTO/RPO-Realität gegen die dokumentierten Ziele halten (Kap. 24.1)","Entscheidung: Wiederanlauf mit Restunsicherheit vs. weitere Verzögerung — wer trägt sie?"],o:["Wird die Backup-Integritätsfrage gestellt, bevor jemand „einspielen\u201c sagt?","Existiert eine dokumentierte Wiederanlauf-Reihenfolge — oder entsteht sie jetzt erst?","Werden RTO/RPO-Ziele mit der Realität konfrontiert?"]},
+ en:{t:"Restart — the second half of the incident",r:"The situation is stabilised. Now executive management asks: \u201cWhen do {PROZ} run again — and how do we know the backups are clean?\u201d For the facilitator's framing: in the Sensorica case (ch. 28), full restart took almost a week, and the last usable backup was 48 hours old.",e:["Set the restart sequence: what first, what depends on what (crown-jewels logic)","Verify backup integrity before restoring — time of compromise vs. backup state","Hold RTO/RPO reality against the documented targets (ch. 24.1)","Decision: restart with residual uncertainty vs. further delay — who carries it?"],o:["Is the backup-integrity question asked before anyone says \u201crestore\u201d?","Does a documented restart sequence exist — or is it being invented now?","Are RTO/RPO targets confronted with reality?"]}}
+};
+
+/* ================= State ================= */
+let state={};
+function initState(){state={werk:"",datum:todayISO(),mod:"",cj:"",parts:["Geschäftsführung / Krisenstab","SOC / IT-Security","OT-Leitung / Leitwarte","Werksleitung"],ans:{}};QUESTIONS.forEach(q=>state.ans[q.key]=q.opts[0]);}
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtDate(iso){if(!iso)return '';const p=String(iso).split('-');if(p.length!==3)return iso;return lang==="en"?p[0]+'-'+p[1]+'-'+p[2]:p[2]+'.'+p[1]+'.'+p[0];}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function werkName(){return (state.werk&&state.werk.trim())?state.werk.trim():L().werkPh;}
+function cjName(){return (state.cj&&state.cj.trim())?state.cj.trim():(opt(state.ans.ziel)||L().cjPh);}
+function modName(){return (state.mod&&state.mod.trim())?state.mod.trim():L().modPh;}
+function fill(s){return s.split("{WERK}").join(esc(werkName())).split("{CJ}").join(esc(cjName())).split("{PROZ}").join(esc(SECT[state.ans.sektor][lang]));}
+
+/* ================= i18n ================= */
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.title=L().title;
+  document.querySelectorAll("[data-t]").forEach(el=>el.innerHTML=L()[el.dataset.t]);
+  document.getElementById("werk").placeholder=L().phWerk;
+  document.getElementById("mod").placeholder=L().phMod;
+  document.getElementById("cj").placeholder=L().phCj;
+  document.getElementById("lde").classList.toggle("on",lang==="de");
+  document.getElementById("len").classList.toggle("on",lang==="en");
+}
+function setLang(l){lang=l;try{const u=new URL(location);u.searchParams.set('lang',l);history.replaceState(null,'',u);}catch(e){}applyLang();renderQuestions();renderOut();}
+
+/* ================= Fragen ================= */
+function renderQuestions(){
+  const wrap=document.getElementById('questions');wrap.innerHTML='';
+  QUESTIONS.forEach(q=>{
+    const div=document.createElement('div');div.className='q';
+    let h=`<div class="qt">${esc(L().q[q.key])}</div><div class="opts">`;
+    q.opts.forEach(o=>{const sel=state.ans[q.key]===o?' sel':'';
+      h+=`<span class="opt${sel}" onclick="setAns('${q.key}','${esc(o).replace(/'/g,"\\'")}')">${esc(opt(o))}</span>`;});
+    h+=`</div>`;div.innerHTML=h;wrap.appendChild(div);
+  });
+  // Teilnehmer (Multi)
+  const div=document.createElement('div');div.className='q';
+  let h=`<div class="qt">${esc(L().lParts)}</div><div class="opts">`;
+  PARTS.forEach(p=>{const sel=state.parts.includes(p)?' sel':'';
+    h+=`<span class="opt${sel}" onclick="togglePart('${esc(p).replace(/'/g,"\\'")}')">${esc(opt(p))}</span>`;});
+  h+=`</div>`;
+  if(state.ans.ziel==="Sicherheitsgerichtetes System (SIS)" && !state.parts.includes("Process Safety Engineer")){
+    h+=`<div class="kettewarn" style="margin-top:8px">⚠ ${esc(L().sisHint)}</div>`;
+  }
+  div.innerHTML=h;wrap.appendChild(div);
+}
+function setAns(k,v){state.ans[k]=v;renderQuestions();renderOut();}
+function togglePart(p){const i=state.parts.indexOf(p);if(i>=0)state.parts.splice(i,1);else state.parts.push(p);renderQuestions();renderOut();}
+
+/* ================= Ablauf-Engine =================
+   Blöcke nach Kap. 8.4.1; Minutenbudget je Dauer.          */
+function buildSchedule(){
+  const dur=parseInt(state.ans.dauer);
+  const useD=state.ans.melde==="BSI-Meldepflicht einspielen";
+  const useE=state.ans.medien==="Medienanfrage einspielen";
+  const useF=dur>=120;
+  const injKeys=["A","B","C"].concat(useD?["D"]:[]).concat(useE?["E"]:[]).concat(useF?["F"]:[]);
+  // Minuten je Inject-Diskussion
+  const base={A:14,B:14,C:18,D:12,E:10,F:14};
+  const brief= dur>=120?15:10, start=5, final=10, debrief= dur>=180?40:(dur>=120?25:18);
+  let budget=dur-brief-start-final-debrief;
+  let need=injKeys.reduce((s,k)=>s+base[k],0);
+  // Skalieren auf Budget
+  const scale=budget/need;
+  const slots=injKeys.map(k=>({k,min:Math.max(8,Math.round(base[k]*scale))}));
+  // Zeitachse
+  const rows=[];let t=0;
+  rows.push({t,blk:L().blkBrief,c:L().blkBriefC,min:brief});t+=brief;
+  rows.push({t,blk:L().blkStart,c:L().blkStartC,min:start});t+=start;
+  let sinceUpd=0,nr=0;
+  slots.forEach((s,i)=>{
+    nr++;
+    rows.push({t,blk:`${L().blkPlay} ${nr}`,c:injTitle(s.k),min:s.min,inj:s.k});t+=s.min;sinceUpd+=s.min;
+    if(sinceUpd>=22 && i<slots.length-1){rows.push({t,blk:L().blkUpd,c:L().blkUpdC,min:5});t+=5;sinceUpd=0;}
+  });
+  rows.push({t,blk:L().blkFinal,c:L().blkFinalC,min:final});t+=final;
+  rows.push({t,blk:L().blkDebrief,c:L().blkDebriefC,min:debrief});t+=debrief;
+  return {rows,injKeys,total:t};
+}
+function injData(k){
+  if(k==="A")return INJ.A[state.ans.vektor][lang];
+  if(k==="B")return INJ.B[state.ans.vektor][lang];
+  if(k==="C")return INJ.C[state.ans.ziel][lang];
+  return INJ[k][lang];
+}
+function injTitle(k){return injData(k).t;}
+
+/* ================= Lernziele ================= */
+function goals(){
+  const g=[...L().goals.base];
+  if(state.ans.melde==="BSI-Meldepflicht einspielen")g.push(L().goals.melde);
+  if(state.ans.medien==="Medienanfrage einspielen")g.push(L().goals.medien);
+  if(state.parts.includes("Geschäftsführung / Krisenstab")||state.parts.includes("Werksleitung"))g.push(L().goals.gf);
+  if(state.ans.ziel==="Sicherheitsgerichtetes System (SIS)")g.push(L().goals.safety);
+  if(parseInt(state.ans.dauer)>=120)g.push(L().goals.recover);
+  return g;
+}
+
+/* ================= Rendering ================= */
+function renderOut(){
+  const T=L();
+  const sch=buildSchedule();
+  const datum=fmtDate(state.datum), dauer=opt(state.ans.dauer);
+  document.getElementById('printHead').innerHTML=
+    `<div class="headline"><span class="t">${T.printTitle}</span><span class="next">${esc(werkName())} · ${esc(datum)}</span></div>`;
+  let h=`<div class="headline noprint"><span class="t">${esc(T.planTitle(werkName()))}</span><span class="next">${esc(opt(state.ans.vektor))} → ${esc(cjName())}</span></div>`;
+  h+=`<div class="legalbox" style="margin-top:0"><b>${T.confidential}</b><br>${esc(T.metaRow(datum,dauer,modName()))} · ${T.vecLabel}: ${esc(opt(state.ans.vektor))} · ${esc(opt(state.ans.ziel))}${state.parts.length?` · ${state.parts.map(p=>esc(opt(p))).join(', ')}`:''}</div>`;
+
+  // Lernziele + Spielregeln
+  h+=section(T.goalsH,`<ul>${goals().map(g=>`<li>${g}</li>`).join('')}</ul>`);
+  h+=section(T.rulesH,`<ul>${T.rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`);
+
+  // Ablaufplan
+  h+=section(T.schedH,`<div class="audit"><table><thead><tr>${T.schedTh.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${
+    sch.rows.map(r=>`<tr${r.inj?' style="font-weight:600"':''}><td style="white-space:nowrap">${T.tplus(r.t)}</td><td style="white-space:nowrap">${esc(r.blk)}</td><td>${esc(r.c)} <span style="color:var(--muted)">(${r.min} ${T.minutes})</span></td></tr>`).join('')
+  }</tbody></table></div>`);
+
+  // Inject-Karten
+  let cards=`<div class="gap" style="margin-bottom:10px">${esc(T.triageNote)}</div>`;
+  sch.injKeys.forEach((k,i)=>{
+    const d=injData(k);
+    const tAbs=sch.rows.find(r=>r.inj===k).t;
+    cards+=`<div class="tmpl"><div class="tmplhead"><span>${i+1} · ${esc(d.t)} — ${T.tplus(tAbs)}</span></div>
+      <div class="tmplbody">
+      <div class="lbl" style="font-size:10px;letter-spacing:1px;color:var(--muted)">${T.injRead}</div>
+      <pre style="white-space:pre-wrap">${fill(esc(d.r))}</pre>
+      <div class="lbl" style="font-size:10px;letter-spacing:1px;color:var(--muted);margin-top:8px">${T.injExp}</div>
+      <ul>${d.e.map(x=>`<li>${fill(esc(x))}</li>`).join('')}</ul>
+      <div class="lbl" style="font-size:10px;letter-spacing:1px;color:var(--muted);margin-top:8px">${T.injObs}</div>
+      <ul>${d.o.map(x=>`<li>${fill(esc(x))}</li>`).join('')}</ul>
+      </div></div>`;
+  });
+  h+=section(T.injH,cards);
+
+  // Beobachterbogen
+  let obs=`<p class="note" style="margin-top:0">${esc(T.obsIntro)}</p>
+  <div class="audit"><table><thead><tr>${T.obsTh.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${
+    sch.injKeys.map((k,i)=>{const d=injData(k);return `<tr><td>${i+1}</td><td>${esc(d.t)}</td><td>${fill(esc(d.o[0]))}</td><td style="width:34px"></td><td style="width:34px"></td><td style="width:34px"></td><td style="width:24%"></td></tr>`;}).join('')
+  }${T.obsKey.map(q=>`<tr><td>—</td><td style="color:var(--muted)">${esc(T.blkDebrief)}</td><td>${esc(q)}</td><td></td><td></td><td></td><td></td></tr>`).join('')}</tbody></table></div>`;
+  h+=`<div id="obsheet">${section(T.obsH,obs)}</div>`;
+
+  // Debrief + Lessons Learned + Audit
+  h+=section(T.debH,`<ol>${T.deb.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`);
+  h+=section(T.llH,`<div class="audit"><table><thead><tr>${T.llTh.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${
+    T.llRows.map(r=>`<tr><td style="white-space:nowrap"><b>${r[0]}</b></td><td style="color:var(--muted)">${esc(r[1])}</td><td style="width:34%"></td></tr>`).join('')
+  }</tbody></table></div>`);
+  h+=section(T.auditH,`<div class="gap">${esc(T.auditBody)}</div>`);
+
+  // Einladung
+  h+=section(T.invH,`<p class="note" style="margin-top:0">${esc(T.invNote)}</p><pre id="inv" style="white-space:pre-wrap">${esc(inviteText())}</pre>`);
+
+  document.getElementById('out').innerHTML=h;
+}
+function section(title,body){return `<div class="stage"><div class="stagehead"><span class="st">${title}</span></div><div class="stagebody">${body}</div></div>`;}
+function inviteText(){
+  const parts=state.parts.length?state.parts.map(p=>opt(p)).join(', '):L().emptyParts;
+  return L().inv(werkName(),fmtDate(state.datum),opt(state.ans.dauer),parts,modName());
+}
+
+/* ================= Aktionen ================= */
+function copyInvite(){
+  const t=inviteText();
+  const done=()=>{const b=document.getElementById('cinv');const o=L().binv;b.textContent=L().binvDone;setTimeout(()=>{b.textContent=o;},1400);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>{fallbackCopy(t);done();});}
+  else{fallbackCopy(t);done();}
+}
+function fallbackCopy(t){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);}
+function printObs(){
+  document.body.classList.add('printobs');
+  const off=()=>{document.body.classList.remove('printobs');window.removeEventListener('afterprint',off);};
+  window.addEventListener('afterprint',off);
+  window.print();
+  setTimeout(off,1500);
+}
+function saveJSON(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ot-tabletop-uebung.json';a.click();}
+function loadJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(d&&d.ans){state.werk=d.werk||"";state.datum=d.datum||todayISO();state.mod=d.mod||"";state.cj=d.cj||"";
+      state.parts=Array.isArray(d.parts)?d.parts.filter(p=>PARTS.includes(p)):[];
+      QUESTIONS.forEach(q=>state.ans[q.key]=q.opts.includes(d.ans[q.key])?d.ans[q.key]:q.opts[0]);
+      syncFields();renderQuestions();renderOut();}
+  }catch(err){alert(L().notRead);}};r.readAsText(f);e.target.value='';}
+function syncFields(){[["werk","werk"],["datum","datum"],["mod","mod"],["cj","cj"]].forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=state[k]||'';});}
+
+/* ================= Init ================= */
+initState();
+try{if(new URLSearchParams(location.search).get('lang')==='en')lang='en';}catch(e){}
+syncFields();applyLang();renderQuestions();renderOut();
+</script>
+</body>
+</html>
