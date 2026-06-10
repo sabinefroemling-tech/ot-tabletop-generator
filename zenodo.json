@@ -1,0 +1,8 @@
+{
+  "title": "OT-Tabletop-Übungsgenerator / OT Tabletop Exercise Generator",
+  "description": "Browser-based, bilingual (DE/EN) generator for OT incident tabletop exercises: schedule, injects (entry vector x target system x sector), containment dilemma per no-touch logic, optional BSI reporting and media complications, observer sheet, debrief guide with NIST CSF v2 lessons-learned grid, spoiler-free invitation. Companion to the book 'ISMS für die Industrie' (Springer Vieweg, 2026), ch. 8.4.",
+  "creators": [{"name": "Frömling, Sabine"}],
+  "license": "CC-BY-NC-ND-4.0",
+  "upload_type": "software",
+  "keywords": ["OT security", "tabletop exercise", "incident response", "ISMS", "NIS2", "ICS", "crisis management"]
+}
